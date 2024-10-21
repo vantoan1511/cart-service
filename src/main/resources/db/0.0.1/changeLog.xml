@@ -21,7 +21,7 @@
             <column name="username" type="VARCHAR(255)">
                 <constraints nullable="false"/>
             </column>
-            <column name="product_id" type="BIGINT">
+            <column name="product_slug" type="VARCHAR(255)">
                 <constraints nullable="false"/>
             </column>
         </createTable>
