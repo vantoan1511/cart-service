@@ -3,8 +3,9 @@ package com.shopbee.cartservice.service;
 import com.shopbee.cartservice.dto.AddCartItemRequest;
 import com.shopbee.cartservice.dto.UpdateQuantityRequest;
 import com.shopbee.cartservice.entity.Cart;
-import com.shopbee.cartservice.external.product.Product;
+import com.shopbee.cartservice.external.product.ProductService;
 import com.shopbee.cartservice.external.product.ProductServiceClient;
+import com.shopbee.cartservice.external.product.dto.Product;
 import com.shopbee.cartservice.repository.CartRepository;
 import com.shopbee.cartservice.shared.exception.CartServiceException;
 import com.shopbee.cartservice.shared.page.PageRequest;
@@ -17,19 +18,23 @@ import jakarta.ws.rs.core.Response;
 import org.eclipse.microprofile.rest.client.inject.RestClient;
 
 import java.util.List;
+import java.util.Objects;
 
 @ApplicationScoped
 public class CartService {
 
     private final ProductServiceClient productServiceClient;
+    private final ProductService productService;
     private final CartRepository cartRepository;
     private final SecurityIdentity identity;
 
     @Inject
     public CartService(@RestClient ProductServiceClient productServiceClient,
+                       ProductService productService,
                        CartRepository cartRepository,
                        SecurityIdentity identity) {
         this.productServiceClient = productServiceClient;
+        this.productService = productService;
         this.cartRepository = cartRepository;
         this.identity = identity;
     }
@@ -43,7 +48,21 @@ public class CartService {
 
     @Transactional
     public Cart add(AddCartItemRequest addCartItemRequest) {
-        Product product = productServiceClient.getBySlug(addCartItemRequest.getProductSlug());
+        Product product = productService.getBySlug(addCartItemRequest.getProductSlug());
+        if (Objects.isNull(product)) {
+            throw new CartServiceException("Product not found " + addCartItemRequest.getProductSlug(), Response.Status.NOT_FOUND);
+        }
+
+        Cart existCart = cartRepository.findByProductSlug(addCartItemRequest.getProductSlug());
+        if (Objects.nonNull(existCart)) {
+            int newQuantity = addCartItemRequest.getQuantity() + existCart.getQuantity();
+            if (newQuantity > product.getStockQuantity()) {
+                throw new CartServiceException("Request quantity must be less than or equal stock", Response.Status.BAD_REQUEST);
+            }
+            existCart.setQuantity(newQuantity);
+            return existCart;
+        }
+
         if (addCartItemRequest.getQuantity() > product.getStockQuantity()) {
             throw new CartServiceException("Request quantity must be less than or equal stock", Response.Status.BAD_REQUEST);
         }

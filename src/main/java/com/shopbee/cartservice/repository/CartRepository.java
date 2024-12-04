@@ -14,6 +14,10 @@ public class CartRepository implements PanacheRepository<Cart> {
         return find("username", username).page(pageRequest.getPage() - 1, pageRequest.getSize()).list();
     }
 
+    public Cart findByProductSlug(String slug) {
+        return find("productSlug", slug).firstResult();
+    }
+
     public void deleteByUsername(String username) {
         delete("username", username);
     }

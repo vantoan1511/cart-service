@@ -1,4 +1,4 @@
-package com.shopbee.cartservice.external.product;
+package com.shopbee.cartservice.external.product.dto;
 
 
 import lombok.AllArgsConstructor;

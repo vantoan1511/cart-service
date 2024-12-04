@@ -1,5 +1,6 @@
 package com.shopbee.cartservice.external.product;
 
+import com.shopbee.cartservice.external.product.dto.Product;
 import com.shopbee.cartservice.shared.exception.mapper.ExternalServiceExceptionMapper;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.Path;
