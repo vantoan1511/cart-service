@@ -53,7 +53,7 @@ public class CartService {
             throw new CartServiceException("Product not found " + addCartItemRequest.getProductSlug(), Response.Status.NOT_FOUND);
         }
 
-        Cart existCart = cartRepository.findByProductSlug(addCartItemRequest.getProductSlug());
+        Cart existCart = cartRepository.findByUsernameAndProductSlug(addCartItemRequest.getProductSlug(), getCurrentUsername());
         if (Objects.nonNull(existCart)) {
             int newQuantity = addCartItemRequest.getQuantity() + existCart.getQuantity();
             if (newQuantity > product.getStockQuantity()) {
